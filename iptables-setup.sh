@@ -15,7 +15,7 @@ iptables -F
 iptables --append INPUT --protocol tcp --dport $iotserver_port --match state \
     --state NEW,ESTABLISHED --jump ACCEPT
 iptables --append OUTPUT --protocol tcp --sport $iotserver_port --match state \
-    --state --state ESTABLISHED --jump ACCEPT
+    --state ESTABLISHED --jump ACCEPT
 
 # R2 R8 - Accept SSH but only from GCC
 # SSH runs on top of TCP/IP stack, 22 is the SSH reserved port

@@ -2,6 +2,7 @@
 
 iotserver_port="12345"
 gcc_ip="10.101.151.5"
+# FIXME(flip) there's more subnets to consider
 dcs_subnet="10.101.52.0/27"
 internal_subnet="10.101.85.0/24"
 dc1_ip="10.121.52.14"
@@ -12,7 +13,8 @@ falua_ip="10.101.85.138"
 luna_ip="10.101.85.24"
 gateway_ip="10.101.204.1"
 proxy_ip="10.101.85.137"
-lab_ip_list="10.121.52.14,10.121.52.15,10.121.52.16,10.121.72.23,10.101.85.138,10.101.85.24,10.101.204.1,10.101.85.137"
+lab_ip_list="10.121.52.14,10.121.52.15,10.121.52.16,10.121.72.23,10.101.85.138,"\
+    "10.101.85.24,10.101.204.1,10.101.85.137"
 twofa_endpoint="lmpinto.eu.pythonanywhere.com"
 
 # Reset INPUT, OUTPUT and FORWARD to default, i.e. accept all
@@ -28,7 +30,7 @@ iptables -P INPUT DROP
 iptables -P OUTPUT DROP
 iptables -P FORWARD DROP
 
-# R9 - Loopback traffic is unconditionally accepted
+# R10 - Loopback traffic is unconditionally accepted
 iptables --append INPUT --in-interface lo --jump ACCEPT
 iptables --append OUTPUT --out-interface lo --jump ACCEPT
 
@@ -72,7 +74,12 @@ iptables --append INPUT --protocol icmp --icmp-type echo-request \
 iptables --append OUTPUT --protocol icmp --icmp-type echo-reply \
     --destination $gcc_ip,$internal_subnet --jump ACCEPT
 
-# R10
+# R9
+iptables --append OUTPUT --protocol icmp --icmp-type echo-request \
+    --destination $internal_subnet --match limit --limit 7/second --jump ACCEPT
+iptables --append INPUT --protocol icmp --icmp-type echo-reply \
+    --source $internal_subnet --jump ACCEPT
+
 
 # R12 - All traffic from selected internal IPs is accepted except SSH and pings
 iptables --append INPUT --protocol tcp --source $lab_ip_list --dport 22 \

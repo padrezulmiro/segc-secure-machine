@@ -10,7 +10,13 @@ iptables -P INPUT ACCEPT
 iptables -P OUTPUT ACCEPT
 iptables -P FORWARD ACCEPT
 
+# Flush every rule from every chain
 iptables -F
+
+# Default behaviour
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
 
 # R3 - Accepts all TCP connections to IoTServer's port
 iptables --append INPUT --protocol tcp --dport $iotserver_port --match state \
@@ -45,8 +51,3 @@ iptables --append OUTPUT --protocol icmp --icmp-type echo-reply \
 # R11
 
 # R12
-
-# Default behaviour
-iptables -P INPUT DROP
-iptables -P OUTPUT DROP
-iptables -P FORWARD DROP

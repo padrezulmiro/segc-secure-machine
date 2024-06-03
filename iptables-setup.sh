@@ -60,7 +60,9 @@ iptables --append OUTPUT --out-interface lo --jump ACCEPT
 
 # R10
 
-# R11
+# R11 - Accept all traffic with an already established connection
+iptables --append INPUT --match state --state ESTABLISHED
+iptables --append OUTPUT --match state --state ESTABLISHED
 
 # R12 - All traffic from selected internal IPs is accepted except SSH and pings
 iptables --append INPUT --protocol tcp --source $lab_ip_list --dport 22 \

@@ -4,6 +4,16 @@ iotserver_port="12345"
 gcc_ip="10.101.151.5"
 dcs_subnet="10.101.52.0/27"
 internal_subnet="10.101.85.0/24"
+dc1_ip="10.121.52.14"
+dc2_ip="10.121.52.15"
+dc3_ip="10.121.52.16"
+storage_ip="10.121.72.23"
+falua_ip="10.101.85.138"
+luna_ip="10.101.85.24"
+gateway_ip="10.101.204.1"
+proxy_ip="10.101.85.137"
+lab_ip_list="10.121.52.14,10.121.52.15,10.121.52.16,10.121.72.23,10.101.85.138,10.101.85.24,10.101.204.1,10.101.85.137"
+
 
 # Reset INPUT, OUTPUT and FORWARD to default, i.e. accept all
 iptables -P INPUT ACCEPT
@@ -24,7 +34,7 @@ iptables --append INPUT --protocol tcp --dport $iotserver_port --match state \
 iptables --append OUTPUT --protocol tcp --sport $iotserver_port --match state \
     --state ESTABLISHED --jump ACCEPT
 
-# R2 R5 R8 - Accept SSH but only from GCC, and can initiate it to SSH too
+# R2 R5 R8 - Accept SSH but only from GCC, and can initiate it to GCC too
 # SSH runs on top of TCP/IP stack, 22 is the SSH reserved port
 iptables --append INPUT --protocol tcp --source $gcc_ip --dport 22 \
     --match state --state NEW,ESTABLISHED --jump ACCEPT
@@ -44,10 +54,16 @@ iptables --append INPUT --protocol icmp --icmp-type echo-request \
 iptables --append OUTPUT --protocol icmp --icmp-type echo-reply \
     --destination $gcc_ip,$internal_subnet --jump ACCEPT
 
-# R9
+# R9 - Loopback traffic is unconditionally accepted
+iptables --append INPUT --in-interface lo --jump ACCEPT
+iptables --append OUTPUT --out-interface lo --jump ACCEPT
 
 # R10
 
 # R11
 
-# R12
+# R12 - All traffic from selected internal IPs is accepted except SSH and pings
+iptables --append INPUT --protocol tcp --source $lab_ip_list --dport 22 \
+    --match state --state NEW,ESTABLISHED --jump DROP
+iptables --append OUTPUT --protocol tcp --destination $lab_ip_list --sport 22 \
+    --match state --state ESTABLISHED --jump DROP

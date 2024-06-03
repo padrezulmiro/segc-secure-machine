@@ -13,6 +13,7 @@ luna_ip="10.101.85.24"
 gateway_ip="10.101.204.1"
 proxy_ip="10.101.85.137"
 lab_ip_list="10.121.52.14,10.121.52.15,10.121.52.16,10.121.72.23,10.101.85.138,10.101.85.24,10.101.204.1,10.101.85.137"
+twofa_endpoint="https://lmpinto.eu.pythonanywhere.com/2FA?e=fc55549@fc.ul.pt&c=12345&a=WyPu9TBBjYQYlzTTTKlJ"
 
 
 # Reset INPUT, OUTPUT and FORWARD to default, i.e. accept all
@@ -46,6 +47,12 @@ iptables --append OUTPUT --protocol tcp --destination $gcc_ip --sport 22 \
 iptables --append INPUT --protocol tcp --source $dcs_subnet --dport 22 \
     --match state --state NEW,ESTABLISHED --jump ACCEPT
 iptables --append OUTPUT --protocol tcp --destination $dcs_subnet --sport 22 \
+    --match state --state ESTABLISHED --jump ACCEPT
+
+# R6 - Accept TCP traffic to 2FA endpoint
+iptables --append OUTPUT --protocol tcp --destination $twofa_endpoint \
+    --match state --state NEW,ESTABLISHED --jump ACCEPT
+iptables --append INPUT --protocol tcp --source $twofa_endpoint \
     --match state --state ESTABLISHED --jump ACCEPT
 
 # R7 - Only receive and respond to ping requests from GCC and the internal subnet

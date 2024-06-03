@@ -13,8 +13,7 @@ luna_ip="10.101.85.24"
 gateway_ip="10.101.204.1"
 proxy_ip="10.101.85.137"
 lab_ip_list="10.121.52.14,10.121.52.15,10.121.52.16,10.121.72.23,10.101.85.138,10.101.85.24,10.101.204.1,10.101.85.137"
-twofa_endpoint="https://lmpinto.eu.pythonanywhere.com/2FA?e=fc55549@fc.ul.pt&c=12345&a=WyPu9TBBjYQYlzTTTKlJ"
-
+twofa_endpoint="lmpinto.eu.pythonanywhere.com"
 
 # Reset INPUT, OUTPUT and FORWARD to default, i.e. accept all
 iptables -P INPUT ACCEPT
@@ -28,6 +27,18 @@ iptables -F
 iptables -P INPUT DROP
 iptables -P OUTPUT DROP
 iptables -P FORWARD DROP
+
+# R9 - Loopback traffic is unconditionally accepted
+iptables --append INPUT --in-interface lo --jump ACCEPT
+iptables --append OUTPUT --out-interface lo --jump ACCEPT
+
+# R11 - Accept all traffic with an already established connection
+iptables --append INPUT --match state --state ESTABLISHED --jump ACCEPT
+iptables --append OUTPUT --match state --state ESTABLISHED --jump ACCEPT
+
+# Allow DNS resolution queries
+iptables --append OUTPUT --protocol tcp --dport 53 --jump ACCEPT
+iptables --append OUTPUT --protocol udp --dport 53 --jump ACCEPT
 
 # R3 - Accepts all TCP connections to IoTServer's port
 iptables --append INPUT --protocol tcp --dport $iotserver_port --match state \
@@ -61,15 +72,7 @@ iptables --append INPUT --protocol icmp --icmp-type echo-request \
 iptables --append OUTPUT --protocol icmp --icmp-type echo-reply \
     --destination $gcc_ip,$internal_subnet --jump ACCEPT
 
-# R9 - Loopback traffic is unconditionally accepted
-iptables --append INPUT --in-interface lo --jump ACCEPT
-iptables --append OUTPUT --out-interface lo --jump ACCEPT
-
 # R10
-
-# R11 - Accept all traffic with an already established connection
-iptables --append INPUT --match state --state ESTABLISHED
-iptables --append OUTPUT --match state --state ESTABLISHED
 
 # R12 - All traffic from selected internal IPs is accepted except SSH and pings
 iptables --append INPUT --protocol tcp --source $lab_ip_list --dport 22 \

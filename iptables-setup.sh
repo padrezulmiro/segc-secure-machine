@@ -77,9 +77,9 @@ iptables --append OUTPUT --protocol icmp --icmp-type echo-reply \
 
 # R9
 iptables --append OUTPUT --protocol icmp --icmp-type echo-request \
-    --destination $internal_subnet --match limit --limit 7/second --jump ACCEPT
+    --destination $local_subnet --match limit --limit 7/second --jump ACCEPT
 iptables --append INPUT --protocol icmp --icmp-type echo-reply \
-    --source $internal_subnet --jump ACCEPT
+    --source $local_subnet --jump ACCEPT
 
 
 # R12 - All traffic from selected internal IPs is accepted except SSH and pings

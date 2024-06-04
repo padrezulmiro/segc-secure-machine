@@ -16,7 +16,7 @@ proxy_ip="10.101.85.137"
 lab_ip_list="10.121.52.14,10.121.52.15,10.121.52.16,10.121.72.23,10.101.85.138,"\
 "10.101.85.24,10.101.204.1,10.101.85.137"
 twofa_endpoint="lmpinto.eu.pythonanywhere.com"
-local_subnet=”10.96.0.0/11”
+local_subnet="10.96.0.0/11"
 
 # Reset INPUT, OUTPUT and FORWARD to default, i.e. accept all
 iptables -P INPUT ACCEPT

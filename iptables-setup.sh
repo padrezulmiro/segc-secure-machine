@@ -4,7 +4,7 @@ iotserver_port="12345"
 gcc_ip="10.101.151.5"
 dc1_ip="10.121.52.14"
 dc2_ip="10.121.52.15"
-dc3_ip="10.121.52.16"
+dc3_ip="10.101.52.16"
 storage_ip="10.121.72.23"
 falua_ip="10.101.85.138"
 luna_ip="10.101.85.24"
@@ -84,7 +84,12 @@ iptables --append OUTPUT --protocol icmp --icmp-type echo-reply \
     --destination $gcc_ip,$ping_res_subnet --jump ACCEPT
 
 # R12 - All traffic from selected internal IPs is accepted except SSH and pings
-iptables --append INPUT --protocol tcp --source $lab_ip_list --dport 22 \
-    --match state --state NEW,ESTABLISHED --jump DROP
-iptables --append OUTPUT --protocol tcp --destination $lab_ip_list --sport 22 \
-    --match state --state ESTABLISHED --jump DROP
+iptables --append INPUT --protocol tcp --source \
+    $storage_ip,$falua_ip,$luna_ip,$gateway_ip,$proxy_ip --dport 22 --jump DROP
+iptables --append OUTPUT --protocol tcp --destination \
+    $storage_ip,$falua_ip,$luna_ip,$gateway_ip,$proxy_ip --sport 22 --jump DROP
+iptables --append INPUT --protocol icmp --icmp-type echo-request --source \
+    $dc1_ip,$dc2_ip,$dc3_ip,$storage_ip,$gateway_ip,$proxy_ip --jump DROP
+
+iptables --append INPUT --source $lab_ip_list --jump ACCEPT
+iptables --append OUTPUT --source $lab_ip_list --jump ACCEPT

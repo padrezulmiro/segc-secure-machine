@@ -2,9 +2,6 @@
 
 iotserver_port="12345"
 gcc_ip="10.101.151.5"
-# FIXME(flip) there's more subnets to consider
-dcs_subnet="10.101.52.0/27"
-ping_res_subnet="10.101.85.0/24"
 dc1_ip="10.121.52.14"
 dc2_ip="10.121.52.15"
 dc3_ip="10.121.52.16"
@@ -16,6 +13,8 @@ proxy_ip="10.101.85.137"
 lab_ip_list="10.121.52.14,10.121.52.15,10.121.52.16,10.121.72.23,10.101.85.138,"\
 "10.101.85.24,10.101.204.1,10.101.85.137"
 twofa_endpoint="lmpinto.eu.pythonanywhere.com"
+dcs_subnet="10.101.52.0/27,10.121.52.0/27"
+ping_res_subnet="10.101.85.0/24"
 local_subnet="10.96.0.0/11"
 
 # Reset INPUT, OUTPUT and FORWARD to default, i.e. accept all

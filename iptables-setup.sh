@@ -4,7 +4,7 @@ iotserver_port="12345"
 gcc_ip="10.101.151.5"
 # FIXME(flip) there's more subnets to consider
 dcs_subnet="10.101.52.0/27"
-internal_subnet="10.101.85.0/24"
+ping_res_subnet="10.101.85.0/24"
 dc1_ip="10.121.52.14"
 dc2_ip="10.121.52.15"
 dc3_ip="10.121.52.16"
@@ -34,6 +34,15 @@ iptables -P FORWARD DROP
 # R10 - Loopback traffic is unconditionally accepted
 iptables --append INPUT --in-interface lo --jump ACCEPT
 iptables --append OUTPUT --out-interface lo --jump ACCEPT
+
+# R9
+iptables --append OUTPUT --protocol icmp --icmp-type echo-request \
+    --destination $local_subnet --match limit --limit 7/second --limit-burst 1 \
+    --jump ACCEPT
+iptables --append OUTPUT --protocol icmp --icmp-type echo-request \
+    --destination $local_subnet --jump DROP
+iptables --append INPUT --protocol icmp --icmp-type echo-reply \
+    --source $local_subnet --jump ACCEPT
 
 # R11 - Accept all traffic with an already established connection
 iptables --append INPUT --match state --state ESTABLISHED --jump ACCEPT
@@ -71,16 +80,9 @@ iptables --append INPUT --protocol tcp --source $twofa_endpoint \
 
 # R7 - Only receive and respond to ping requests from GCC and the internal subnet
 iptables --append INPUT --protocol icmp --icmp-type echo-request \
-    --source $gcc_ip,$internal_subnet --jump ACCEPT
+    --source $gcc_ip,$ping_res_subnet --jump ACCEPT
 iptables --append OUTPUT --protocol icmp --icmp-type echo-reply \
-    --destination $gcc_ip,$internal_subnet --jump ACCEPT
-
-# R9
-iptables --append OUTPUT --protocol icmp --icmp-type echo-request \
-    --destination $local_subnet --match limit --limit 7/second --jump ACCEPT
-iptables --append INPUT --protocol icmp --icmp-type echo-reply \
-    --source $local_subnet --jump ACCEPT
-
+    --destination $gcc_ip,$ping_res_subnet --jump ACCEPT
 
 # R12 - All traffic from selected internal IPs is accepted except SSH and pings
 iptables --append INPUT --protocol tcp --source $lab_ip_list --dport 22 \
